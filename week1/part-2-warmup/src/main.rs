@@ -3,19 +3,44 @@
 use std::collections::HashSet;
 
 fn main() {
+    let mut v : Vec<i32> = Vec::new();
+    v.push(1);
+    v.push(2);
+    v.push(2);    
+    dedup(&mut v);
     println!("Hi! Try running \"cargo test\" to run tests.");
 }
 
 fn add_n(v: Vec<i32>, n: i32) -> Vec<i32> {
-    unimplemented!()
+    let mut v_clone = v.clone();
+    for i in v_clone.iter_mut() {
+        *i = *i + n;
+    }
+    v_clone
 }
 
 fn add_n_inplace(v: &mut Vec<i32>, n: i32) {
-    unimplemented!()
+    for i in v.iter_mut() {
+        *i = *i + n;
+    }
 }
 
 fn dedup(v: &mut Vec<i32>) {
-    unimplemented!()
+    let mut dict = HashSet::new();
+    let mut v_new = Vec::new();
+    for i in v.iter() {
+        if dict.contains(i) {
+            continue;
+        } else {
+            dict.insert(*i);
+            v_new.push(*i);
+            println!("{}", *i);
+        }
+    }
+    v.clear();
+    for i in v_new.iter() {
+        v.push(*i);
+    }
 }
 
 #[cfg(test)]
