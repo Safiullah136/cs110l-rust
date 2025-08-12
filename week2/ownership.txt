@@ -9,8 +9,7 @@ fn main() {
     println!("{}", ref3.to_uppercase());
 }
 ```
-
-
+It does not compile. One key rule of Rust is we cannot modify a value until there are immutable references or borrowers to string. Since we are using refernces after modifying string too so rust compiler cannot drop references and since references are alive during modifying, it is voilation of rule of Rust.  
 
 Example 2:
 ```
@@ -19,8 +18,8 @@ fn drip_drop() -> &String {
     return &s;
 }
 ```
-
-
+This does not compile.
+When function ends, s goes out of scope and is dropped. Since a reference to s is being returned which gets deallocated after function ends, returned reference becomes a dangling reference.
 
 Example 3:
 ```
@@ -32,3 +31,5 @@ fn main() {
     println!("{}", s2);
 }
 ```
+This does not compile.
+Since string does not implement copy trait, we try to transfer ownership by assigning v[0] to s2 but that value belongs to vector and it cannot be pulled out of its index.
