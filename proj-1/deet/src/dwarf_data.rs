@@ -10,12 +10,12 @@ pub enum Error {
     DwarfFormatError(gimli_wrapper::Error),
 }
 
-pub struct DwarfData {
+pub struct DwarfData<'a> {
     files: Vec<File>,
-    addr2line: Context<addr2line::gimli::EndianRcSlice<addr2line::gimli::RunTimeEndian>>,
+    addr2line: Context<addr2line::gimli::EndianRcSlice<'a, addr2line::gimli::RunTimeEndian>>,
 }
 
-impl fmt::Debug for DwarfData {
+impl fmt::Debug for DwarfData<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "DwarfData {{files: {:?}}}", self.files)
     }
@@ -27,11 +27,11 @@ impl From<gimli_wrapper::Error> for Error {
     }
 }
 
-impl DwarfData {
+impl DwarfData<'_> {
     pub fn from_file(path: &str) -> Result<DwarfData, Error> {
         let file = fs::File::open(path).or(Err(Error::ErrorOpeningFile))?;
-        let mmap = unsafe { memmap::Mmap::map(&file).or(Err(Error::ErrorOpeningFile))? };
-        let object = object::File::parse(&*mmap)
+        let mmap = unsafe { memmap2::Mmap::map(&file).or(Err(Error::ErrorOpeningFile))? };
+        let object = object::read::File::parse(&*mmap)
             .or_else(|e| Err(gimli_wrapper::Error::ObjectError(e.to_string())))?;
         let endian = if object.is_little_endian() {
             gimli::RunTimeEndian::Little
@@ -40,6 +40,7 @@ impl DwarfData {
         };
         Ok(DwarfData {
             files: gimli_wrapper::load_file(&object, endian)?,
+            // addr2line: Context::from_dwarf().or_else(|e| Err(gimli_wrapper::Error::from(e)))?,
             addr2line: Context::new(&object).or_else(|e| Err(gimli_wrapper::Error::from(e)))?,
         })
     }
